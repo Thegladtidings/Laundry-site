@@ -1,105 +1,109 @@
-import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
+import type { Request, Response } from 'express';
+import { z } from 'zod';
 import User from '../models/user.js';
-import jwt from 'jsonwebtoken';
-import { type Request, type Response } from 'express';
+import { createToken } from '../lib/jwt.js';
+import HttpError from '../lib/http-error.js';
 
+const registrationSchema = z.object({
+    firstname: z.string().trim().min(1).max(60),
+    lastname: z.string().trim().min(1).max(60),
+    username: z.string().trim().min(3).max(30).regex(/^[a-zA-Z0-9._-]+$/),
+    email: z.string().trim().email().max(254).transform((value) => value.toLowerCase()),
+    phone: z.string().trim().min(7).max(20),
+    password: z.string().min(8).max(72),
+}).strict();
 
-interface NewUser{
+const loginSchema = z.object({
+    email: z.string().trim().email().max(254).transform((value) => value.toLowerCase()),
+    password: z.string().min(1).max(72),
+}).strict();
+
+const createCashierSchema = z.object({
+    firstname: z.string().trim().min(1).max(60),
+    lastname: z.string().trim().min(1).max(60),
+    username: z.string().trim().min(3).max(30).regex(/^[a-zA-Z0-9._-]+$/),
+    email: z.string().trim().email().max(254).transform((value) => value.toLowerCase()),
+    phone: z.string().trim().min(7).max(20),
+    password: z.string().min(12).max(72),
+}).strict();
+
+const serializeUser = (user: {
+    id: string;
     firstname: string;
     lastname: string;
     username: string;
-    password: string;
     email: string;
     phone: string;
-    role: 'admin' | 'user' | 'cashier';
-}
-interface LoginRequest extends Request {
-    body: {
-        email: string;
-        password: string; 
-        role: string;  
-    };
-}
-interface JWTUserPayload {
-    user: {
-        id: string;
-        email: string;
-        role: string;
-    };
-}
+    role: string;
+}) => ({
+    id: user.id,
+    firstname: user.firstname,
+    lastname: user.lastname,
+    username: user.username,
+    email: user.email,
+    phone: user.phone,
+    role: user.role,
+});
 
-export const registerUser = async (req: Request, res: Response) => {
-    const { firstname, lastname, username, password, email, phone,   role } = req.body as NewUser;
-    if(!firstname || !lastname || !username || !password || !email || !phone || !role) {
-        res.status(400).json({ message: 'All fields are required' });
-        return;
-    }
-    try {
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ message: 'User already exists' });
-        }
-        const newUser = new User({
-            firstname,
-            lastname,
-            username,
-            password,
-            email,
-            phone,
-            role
-        });
-        await newUser.save();
-        res.status(201).json({ message: 'User registered successfully' });
-    } catch (error) {
-        res.status(500).json({ message: 'Internal server error', error: (error as Error).message });
+export const registerUser = async (req: Request, res: Response): Promise<void> => {
+    const input = registrationSchema.parse(req.body);
+    const user = await User.create(input);
+    const token = createToken({ userId: user.id, role: user.role });
+
+    res.status(201).json({ user: serializeUser(user), token });
+};
+
+export const loginUser = async (req: Request, res: Response): Promise<void> => {
+    const input = loginSchema.parse(req.body);
+    const user = await User.findOne({ email: input.email, active: true }).select('+password');
+    if (!user || !(await bcrypt.compare(input.password, user.password))) {
+        throw new HttpError(401, 'The email or password you entered is incorrect.');
     }
 
-}
+    const token = createToken({ userId: user.id, role: user.role });
+    res.json({ user: serializeUser(user), token });
+};
 
-export const loginUser = async (req: LoginRequest, res: Response) => {
-    const { email, password,role} = req.body;
-      if (!email || !password || !role) {
-            res.status(400).json({ message: 'Email, password, and role are required' });
-            return;
-        }
-    
-    const user = await User.findOne({ email });
+export const getCurrentUser = async (req: Request, res: Response): Promise<void> => {
+    if (!req.auth) throw new HttpError(401, 'Please sign in to continue.');
+    const user = await User.findById(req.auth.userId);
+    if (!user) throw new HttpError(401, 'Your account could not be found.');
+    res.json({ user: serializeUser(user) });
+};
 
-    try {
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        const isMatch : boolean = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(401).json({ message: 'Invalid credentials' });
-        }
-        const payload: JWTUserPayload = {
-            user: {
-                id: user.id,
-                email: user.email,
-                role: user.role
-            }
-        };
-        const secret: string = process.env.JWT_SECRET || 'default_secret';
+export const listStaff = async (_req: Request, res: Response): Promise<void> => {
+    const staff = await User.find({ role: { $in: ['admin', 'cashier'] } })
+        .select('firstname lastname username email phone role active createdAt')
+        .sort({ role: 1, firstname: 1 });
+    res.json({
+        staff: staff.map((member) => ({
+            id: member.id,
+            firstname: member.firstname,
+            lastname: member.lastname,
+            username: member.username,
+            email: member.email,
+            phone: member.phone,
+            role: member.role,
+            active: member.active,
+            createdAt: member.createdAt,
+        })),
+    });
+};
 
-          const token : string = jwt.sign(
-            payload, 
-            secret,
-            {expiresIn: '1h'}
-          );
+export const createCashier = async (req: Request, res: Response): Promise<void> => {
+    const input = createCashierSchema.parse(req.body);
+    const cashier = await User.create({ ...input, role: 'cashier' });
+    res.status(201).json({ user: serializeUser(cashier) });
+};
 
-          res.json({
-            message: 'Login successful',
-            token,
-            user:{
-                id: user.id,
-                email: user.email,
-                role: user.role
-            }
-          });
-            } catch (error) {
-        res.status(500).json({ message: 'Internal server error', error: (error as Error).message    });
-    }
-
-}
+export const updateCashierStatus = async (req: Request, res: Response): Promise<void> => {
+    const { active } = z.object({ active: z.boolean() }).strict().parse(req.body);
+    const cashier = await User.findOneAndUpdate(
+        { _id: req.params.userId, role: 'cashier' },
+        { active },
+        { new: true, runValidators: true },
+    ).select('firstname lastname username email phone role active createdAt');
+    if (!cashier) throw new HttpError(404, 'That cashier account could not be found.');
+    res.json({ user: cashier });
+};

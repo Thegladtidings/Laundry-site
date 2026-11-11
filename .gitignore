@@ -1,10 +1,21 @@
-#node modules
+# dependencies
 node_modules
 
-#dist files
+# build output
 dist
+build
+*.tsbuildinfo
 
-#env files
+# env files
 .env
+.env.*
+!.env.example
 
+# logs
+*.log
+npm-debug.log*
 
+# editor / OS
+.vscode/settings.json
+.DS_Store
+Thumbs.db

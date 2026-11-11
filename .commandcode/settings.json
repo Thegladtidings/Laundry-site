@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Shell(node -v)",
+      "Shell(npm:*)",
+      "Shell(node -e \"const p=require('./server/node_modules/mongoose/package.json');console.log('mongoose',p.version);const e=require('./server/node_modules/express/package.json');console.log('express',e.version);\")",
+      "powershell",
+      "Shell(node -e \"const b=require('bcrypt'); b.hash('test',10).then(h=>console.log('bcrypt ok',h.slice(0,7))).catch(e=>{console.error('bcrypt fail',e.message);process.exit(1)})\")",
+      "Shell(node -e \"console.log(require('./server/package.json').devDependencies['@types/express']);console.log(require('./node_modules/@types/express/package.json').version)\")",
+      "Shell(node -e \"console.log(require('./server/node_modules/@types/express/package.json').version)\")"
+    ],
+    "deny": [],
+    "defaultMode": "default"
+  }
+}
