@@ -72,7 +72,7 @@ export default function NewOrderPage() {
         }
         const existing = photos[materialId] ?? [];
         if (existing.length + addedFiles.length > 3) {
-            toast.error('Add up to 3 photos for each garment type.');
+            toast.error('Add up to 3 photos for each item type.');
             return;
         }
         const totalPhotos = Object.values(photos).reduce((count, files) => count + files.length, 0);
@@ -86,7 +86,7 @@ export default function NewOrderPage() {
     const submit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         if (!selected.length) {
-            toast.error('Choose at least one garment type to continue.');
+            toast.error('Choose at least one item type to continue.');
             return;
         }
         setBusy(true);
@@ -125,9 +125,9 @@ export default function NewOrderPage() {
             <form className="booking-layout" onSubmit={submit}>
                 <div className="booking-main">
                     <section className="booking-panel">
-                        <div className="panel-title"><span className="step-chip">01</span><div><h2>Choose your garments</h2><p>Select each material type and the number of pieces.</p></div></div>
-                        {isLoading && <div className="inline-loading"><span className="spinner" /> Loading garment prices…</div>}
-                        {isError && <p className="notice notice-error">We couldn’t load the garment catalogue. Please try again shortly.</p>}
+                        <div className="panel-title"><span className="step-chip">01</span><div><h2>Choose your items</h2><p>Select each service type and the number of pieces.</p></div></div>
+                        {isLoading && <div className="inline-loading"><span className="spinner" /> Loading service prices…</div>}
+                        {isError && <p className="notice notice-error">We couldn’t load the service list. Please try again shortly.</p>}
                         <div className="booking-service-list">
                             {catalog?.materials.map((material) => {
                                 const selection = items[material.id];
@@ -201,7 +201,7 @@ export default function NewOrderPage() {
                         <div className="form-stack">
                             <label className="field"><span>Pickup address</span><input name="pickupAddress" autoComplete="street-address" placeholder="Street address, area, city" minLength={8} maxLength={300} required /></label>
                             <label className="field"><span>Preferred pickup time</span><input name="pickupDate" type="datetime-local" min={localDateTimeMinimum()} required /></label>
-                            <label className="field"><span>Anything we should know? <small>Optional</small></span><textarea name="notes" rows={3} maxLength={1000} placeholder="Special instructions, fabric notes, or a gate code…" /></label>
+                            <label className="field"><span>Anything we should know? <small>Optional</small></span><textarea name="notes" rows={3} maxLength={1000} placeholder="Special instructions or a gate code…" /></label>
                         </div>
                     </section>
                 </div>
@@ -209,19 +209,19 @@ export default function NewOrderPage() {
                     <span className="section-kicker">Your fresh start</span>
                     <h2>Order summary</h2>
                     {selected.length === 0 ? (
-                        <p className="summary-empty">Your chosen garments will appear here.</p>
+                        <p className="summary-empty">Your chosen items will appear here.</p>
                     ) : (
                         <div className="summary-lines">
                             {selected.map(([id, selection]) => {
                                 const material = catalog?.materials.find((item) => item.id === id);
                                 if (!material) return null;
                                 const unitTotal = material.price + (selection.stainRemoval ? catalog?.stainRemovalFee ?? 0 : 0);
-                                return <div className="summary-line" key={id}><span>{material.name} <small>× {selection.quantity}{selection.stainRemoval ? ' · stain care' : ''}</small></span><strong>{formatCurrency(unitTotal * selection.quantity)}</strong></div>;
+                                return <div className="summary-line" key={id}><span>{material.name} <small>× {selection.quantity}{selection.stainRemoval ? ' · stain treatment' : ''}</small></span><strong>{formatCurrency(unitTotal * selection.quantity)}</strong></div>;
                             })}
                         </div>
                     )}
                     <div className="summary-total"><span>Estimated total</span><strong>{formatCurrency(total)}</strong></div>
-                    <p className="summary-note">This estimate uses current prices. The cashier will verify garment types, quantities, and stain treatment before payment.</p>
+                    <p className="summary-note">This estimate uses current prices. The cashier will verify item types, quantities, and stain treatment before payment.</p>
                     <button type="submit" className="button button-dark button-wide" disabled={busy || isLoading || isError}>
                         {busy ? 'Booking your pickup…' : 'Request pickup'} <ArrowUpRight size={16} />
                     </button>

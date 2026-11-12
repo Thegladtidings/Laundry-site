@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useAuth } from '../auth/AuthContext';
 import { getErrorMessage } from '../lib/format';
 import Brand from '../components/Brand';
+import siteConfig from '../config/site';
 
 export default function LoginPage() {
     const { login } = useAuth();
@@ -37,14 +38,14 @@ export default function LoginPage() {
     return (
         <section className="auth-page">
             <div className="auth-aside">
-                <Link to="/" className="back-link"><ArrowLeft size={16} /> Back to Alwajud</Link>
+                <Link to="/" className="back-link"><ArrowLeft size={16} /> Back to {siteConfig.name}</Link>
                 <div className="auth-aside-content">
                     <span className="auth-aside-mark"><LockKeyhole size={21} /></span>
-                    <span className="section-kicker">Your laundry, in good hands</span>
+                    <span className="section-kicker">Welcome back</span>
                     <h2>A little more space<br /><em>for your day.</em></h2>
-                    <p>Pick up right where you left off. Your next fresh start is just around the corner.</p>
+                    <p>Pick up right where you left off. Your next order is just around the corner.</p>
                 </div>
-                <span className="auth-aside-foot">GOOD CARE, RIGHT ON TIME.</span>
+                <span className="auth-aside-foot">YOUR ORDERS, RIGHT ON TIME.</span>
             </div>
             <div className="auth-main">
                 <Brand />
@@ -57,7 +58,7 @@ export default function LoginPage() {
                         <label className="field"><span>Password</span><input name="password" type="password" autoComplete="current-password" placeholder="Your password" required /></label>
                         <button className="button button-dark button-wide" type="submit" disabled={busy}>{busy ? 'Signing you in…' : 'Sign in'} <ArrowUpRight size={16} /></button>
                     </form>
-                    <p className="auth-switch">New to Alwajud? <Link to="/register">Create an account</Link></p>
+                    <p className="auth-switch">New to {siteConfig.name}? <Link to="/register">Create an account</Link></p>
                 </div>
                 <p className="auth-privacy">Your details stay private, always.</p>
             </div>

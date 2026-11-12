@@ -3,7 +3,7 @@ import type { OrderStatus } from '../types';
 const statusLabels: Record<OrderStatus, string> = {
     pending: 'Awaiting pickup',
     picked_up: 'Picked up',
-    processing: 'In care',
+    processing: 'In progress',
     ready: 'Ready to return',
     delivered: 'Delivered',
     cancelled: 'Cancelled',

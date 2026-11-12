@@ -5,7 +5,11 @@ import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import App from './App';
 import { AuthProvider } from './auth/AuthContext';
+import siteConfig from './config/site';
 import './styles.css';
+
+document.title = `${siteConfig.name} — ${siteConfig.tagline}`;
+document.querySelector('meta[name="description"]')?.setAttribute('content', siteConfig.description);
 
 const queryClient = new QueryClient({
     defaultOptions: {

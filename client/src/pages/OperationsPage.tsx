@@ -40,6 +40,7 @@ import type {
     WalkInOrder,
 } from '../types';
 import StatusBadge from '../components/StatusBadge';
+import siteConfig from '../config/site';
 
 type AdminTab = 'overview' | 'orders' | 'sales' | 'staff' | 'pricing';
 type Period = 'today' | '7d' | '30d';
@@ -260,7 +261,7 @@ function VerifyOrderDialog({
                     <div><span className="section-kicker">Cashier verification · #{order._id.slice(-7).toUpperCase()}</span><h2 id="verify-order-title">Confirm items & price</h2></div>
                     <button type="button" className="receipt-close" aria-label="Close verification" onClick={onClose} disabled={busy}><X size={17} /></button>
                 </div>
-                <p className="verify-intro">Review the submitted pieces, adjust the garment type, quantity or stain treatment, and verify the final total before collecting payment.</p>
+                <p className="verify-intro">Review the submitted items, adjust the service type, quantity or stain treatment, and verify the final total before collecting payment.</p>
                 <div className="verify-items">
                     {items.map((item, index) => (
                         <article className="verify-item" key={item.lineId || index}>
@@ -450,7 +451,7 @@ function WalkInTracking({
     return (
         <section className="ops-panel walk-in-tracking">
             <div className="ops-panel-heading">
-                <div><span className="section-kicker">Counter garments</span><h2>Walk-in job tracking</h2></div>
+                <div><span className="section-kicker">Counter service</span><h2>Walk-in job tracking</h2></div>
                 <span className="ops-heading-icon"><ShoppingBag size={17} /></span>
             </div>
             {!jobs.length ? (
@@ -458,7 +459,7 @@ function WalkInTracking({
             ) : (
                 <div className="ops-table-wrap">
                     <table className="ops-table">
-                        <thead><tr><th>Item tag</th><th>Customer & garments</th><th>Received</th><th>Status</th><th className="align-right">Total</th><th>Update</th></tr></thead>
+                        <thead><tr><th>Item tag</th><th>Customer & items</th><th>Received</th><th>Status</th><th className="align-right">Total</th><th>Update</th></tr></thead>
                         <tbody>
                             {jobs.map((job) => (
                                 <tr key={job._id}>
@@ -511,7 +512,7 @@ function ItemTagLookup() {
     return (
         <section className="ops-panel item-tag-lookup">
             <div className="ops-panel-heading">
-                <div><span className="section-kicker">Find tagged garments</span><h2>Search item tag</h2></div>
+                <div><span className="section-kicker">Find tagged items</span><h2>Search item tag</h2></div>
                 <span className="ops-heading-icon"><Search size={17} /></span>
             </div>
             <form className="tag-search-form" onSubmit={search}>
@@ -567,7 +568,7 @@ function WalkInSaleForm({
     const submit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         if (!selected.length) {
-            toast.error('Choose at least one garment type to record a sale.');
+            toast.error('Choose at least one item type to record a sale.');
             return;
         }
         if (customerMode === 'existing' && !selectedCustomer) {
@@ -743,7 +744,7 @@ function WalkInSaleForm({
             <button type="submit" className="button button-dark button-wide" disabled={busy || (customerMode === 'existing' && !selectedCustomer)}>
                 {busy ? 'Recording sale…' : 'Record sale & issue receipt'} <ArrowUpRight size={15} />
             </button>
-            <p className="cash-sale-footnote"><ShieldCheck size={13} /> Prices and stain fees come from the admin-managed garment catalogue.</p>
+            <p className="cash-sale-footnote"><ShieldCheck size={13} /> Prices and stain fees come from the admin-managed service list.</p>
         </form>
     );
 }
@@ -769,7 +770,7 @@ function PricingPanel({ catalog }: { catalog: PricingCatalog }) {
             });
             queryClient.setQueryData(['materials'], data);
             await queryClient.invalidateQueries({ queryKey: ['operations'] });
-            toast.success('Garment prices and stain fee updated.');
+            toast.success('Service prices and stain fee updated.');
         } catch (error) {
             toast.error(getErrorMessage(error, 'We could not save the new pricing.'));
         } finally {
@@ -780,7 +781,7 @@ function PricingPanel({ catalog }: { catalog: PricingCatalog }) {
     return (
         <form className="ops-panel pricing-panel" onSubmit={save}>
             <div className="ops-panel-heading">
-                <div><span className="section-kicker">Pricing controls</span><h2>Garment catalogue</h2></div>
+                <div><span className="section-kicker">Pricing controls</span><h2>Service list</h2></div>
                 <span className="ops-heading-icon"><Tags size={17} /></span>
             </div>
             <p className="ledger-note">These prices power customer estimates, cashier intake and order verification. Changes apply to new estimates and unverified orders.</p>
@@ -811,7 +812,7 @@ function ReceiptDialog({ receipt, onClose }: { receipt: ReceiptDetails; onClose:
                     <button type="button" className="receipt-close" aria-label="Close receipt" onClick={onClose}><X size={17} /></button>
                 </div>
                 <div className="receipt-paper">
-                    <div className="receipt-brand"><span className="brand-mark"><Banknote size={16} /></span><strong>Alwajud<span>.</span></strong></div>
+                    <div className="receipt-brand"><span className="brand-mark"><Banknote size={16} /></span><strong>{siteConfig.name}<span>.</span></strong></div>
                     <p className="receipt-label">PAYMENT RECEIPT</p>
                     <div className="receipt-reference"><span>Receipt number</span><strong>{receipt.receiptNumber}</strong></div>
                     {receipt.tagCode && <div className="receipt-reference"><span>Item tag code</span><strong>{receipt.tagCode}</strong></div>}
@@ -828,7 +829,7 @@ function ReceiptDialog({ receipt, onClose }: { receipt: ReceiptDetails; onClose:
                     </div>
                     <div className="receipt-reference"><span>Paid by</span><strong>{receipt.paymentMethod}</strong></div>
                     <div className="receipt-total"><span>Total received</span><strong>{formatCurrency(receipt.total)}</strong></div>
-                    <p className="receipt-thanks">Thank you for choosing Alwajud.<br />Thoughtful care, in every detail.</p>
+                    <p className="receipt-thanks">Thank you for choosing {siteConfig.name}.<br />{siteConfig.copy.footerTagline}</p>
                 </div>
                 <button type="button" className="button button-dark button-wide receipt-print-button" onClick={() => window.print()}>
                     <Printer size={15} /> Print receipt
@@ -953,7 +954,7 @@ function exportSales(sales: SaleRecord[]): void {
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
     const anchor = document.createElement('a');
     anchor.href = url;
-    anchor.download = `Alwajud-sales-${new Date().toISOString().slice(0, 10)}.csv`;
+    anchor.download = `${siteConfig.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-sales-${new Date().toISOString().slice(0, 10)}.csv`;
     anchor.click();
     window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
@@ -1038,7 +1039,7 @@ export default function OperationsPage() {
         { id: 'overview', label: 'Overview', icon: ClipboardList },
         { id: 'orders', label: 'Orders', icon: ShoppingBag },
         { id: 'sales', label: 'Sales & receipts', icon: ReceiptText },
-        { id: 'pricing', label: 'Garment pricing', icon: Tags },
+        { id: 'pricing', label: 'Service pricing', icon: Tags },
         { id: 'staff', label: 'Staff', icon: Users },
     ];
 
@@ -1047,7 +1048,7 @@ export default function OperationsPage() {
             <div className="ops-topbar">
                 <div className="ops-topbar-brand">
                     <span className="ops-brand-mark">{isAdmin ? <ShieldCheck size={17} /> : <Banknote size={18} />}</span>
-                    <span><strong>{isAdmin ? 'Operations' : 'Cashier desk'}</strong><small>Alwajud · {isAdmin ? 'ADMINISTRATION' : 'POINT OF SALE'}</small></span>
+                    <span><strong>{isAdmin ? 'Operations' : 'Cashier desk'}</strong><small>{siteConfig.name} · {isAdmin ? 'ADMINISTRATION' : 'POINT OF SALE'}</small></span>
                 </div>
                 <div className="ops-topbar-user">
                     <span className="ops-live-dot" /> {isAdmin ? 'Admin workspace' : 'Sales desk open'}
@@ -1071,7 +1072,7 @@ export default function OperationsPage() {
                 <header className="ops-page-heading">
                     <div>
                         <span className="section-kicker">{isAdmin ? 'Business at a glance' : `Welcome back, ${user?.firstname}`}</span>
-                        <h1>{isAdmin ? tab === 'orders' ? 'Order management' : tab === 'sales' ? 'Sales & receipts' : tab === 'staff' ? 'Your team' : tab === 'pricing' ? 'Garment pricing' : 'Good care, running smoothly.' : 'Let’s make today count.'}</h1>
+                        <h1>{isAdmin ? tab === 'orders' ? 'Order management' : tab === 'sales' ? 'Sales & receipts' : tab === 'staff' ? 'Your team' : tab === 'pricing' ? 'Service pricing' : 'Everything running smoothly.' : 'Let’s make today count.'}</h1>
                         <p>{isAdmin ? 'A clear view of today’s work, your sales and your team.' : 'Record counter sales, collect payments and keep every order moving.'}</p>
                     </div>
                     <div className="ops-heading-actions">
@@ -1088,7 +1089,7 @@ export default function OperationsPage() {
 
                 {isError && <p className="notice notice-error">Operations data could not be loaded. Please try again.</p>}
                 {isLoading && <div className="inline-loading"><span className="spinner" /> Loading your operations…</div>}
-                {isCatalogError && <p className="notice notice-error">The garment catalogue could not be loaded. Please use refresh to retry before recording or verifying orders.</p>}
+                {isCatalogError && <p className="notice notice-error">The service list could not be loaded. Please use refresh to retry before recording or verifying orders.</p>}
 
                 {data && (
                     <>
@@ -1167,7 +1168,7 @@ export default function OperationsPage() {
                         {isAdmin && tab === 'pricing' && (
                             catalog
                                 ? <PricingPanel catalog={catalog} />
-                                : isCatalogLoading && <div className="ops-panel"><div className="inline-loading"><span className="spinner" /> Loading garment prices…</div></div>
+                                : isCatalogLoading && <div className="ops-panel"><div className="inline-loading"><span className="spinner" /> Loading service prices…</div></div>
                         )}
 
                         {isCashier && catalog && (
@@ -1185,7 +1186,7 @@ export default function OperationsPage() {
                                 <ItemTagLookup />
                             </section>
                         )}
-                        {isCashier && !catalog && isCatalogLoading && <div className="ops-panel"><div className="inline-loading"><span className="spinner" /> Loading garment catalogue…</div></div>}
+                        {isCashier && !catalog && isCatalogLoading && <div className="ops-panel"><div className="inline-loading"><span className="spinner" /> Loading service list…</div></div>}
                     </>
                 )}
             </div>

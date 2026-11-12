@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useAuth } from '../auth/AuthContext';
 import { getErrorMessage } from '../lib/format';
 import Brand from '../components/Brand';
+import siteConfig from '../config/site';
 
 export default function RegisterPage() {
     const { register } = useAuth();
@@ -31,7 +32,7 @@ export default function RegisterPage() {
                 phone: String(form.get('phone')),
                 password,
             });
-            toast.success('Your Alwajud account is ready.');
+            toast.success(`Your ${siteConfig.name} account is ready.`);
             const material = new URLSearchParams(location.search).get('material');
             navigate(
                 material ? `/orders/new?material=${encodeURIComponent(material)}` : '/orders/new',
@@ -47,18 +48,18 @@ export default function RegisterPage() {
     return (
         <section className="auth-page">
             <div className="auth-aside auth-aside-register">
-                <Link to="/" className="back-link"><ArrowLeft size={16} /> Back to Alwajud</Link>
+                <Link to="/" className="back-link"><ArrowLeft size={16} /> Back to {siteConfig.name}</Link>
                 <div className="auth-aside-content">
                     <span className="section-kicker">Make room for more</span>
                     <h2>Fresh clothes.<br /><em>Clear head.</em></h2>
-                    <p>Your laundry day, thoughtfully taken care of from the very first pickup.</p>
+                    <p>Get started in a few steps and schedule your first pickup whenever you’re ready.</p>
                 </div>
                 <span className="auth-aside-foot">A FRESH START, EVERY TIME.</span>
             </div>
             <div className="auth-main">
                 <Brand />
                 <div className="auth-form-wrap auth-form-wide">
-                    <span className="section-kicker">Welcome to Alwajud</span>
+                    <span className="section-kicker">Welcome to {siteConfig.name}</span>
                     <h1>Let’s make it easy.</h1>
                     <p className="auth-subtitle">Create your account and we’ll take it from here.</p>
                     <form className="form-stack" onSubmit={submit}>

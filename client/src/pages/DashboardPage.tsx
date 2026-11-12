@@ -7,6 +7,7 @@ import { formatCurrency, formatDate, getErrorMessage } from '../lib/format';
 import { useAuth } from '../auth/AuthContext';
 import type { Order, OrderStatus } from '../types';
 import StatusBadge from '../components/StatusBadge';
+import siteConfig from '../config/site';
 
 const statusOptions: OrderStatus[] = ['pending', 'picked_up', 'processing', 'ready', 'delivered', 'cancelled'];
 
@@ -32,18 +33,18 @@ export default function DashboardPage() {
         <section className="page-shell dashboard-page">
             <div className="dashboard-welcome">
                 <div>
-                    <span className="section-kicker">{user?.role === 'admin' ? 'Alwajud operations' : 'Your Alwajud account'}</span>
+                    <span className="section-kicker">{user?.role === 'admin' ? `${siteConfig.name} operations` : `Your ${siteConfig.name} account`}</span>
                     <h1>{user?.role === 'admin' ? 'Good to have you, ' : 'A fresh start, '}{user?.firstname}<em>.</em></h1>
-                    <p>{user?.role === 'admin' ? 'Here’s what’s happening with pickups and orders.' : 'Your laundry care, all in one lovely little place.'}</p>
+                    <p>{user?.role === 'admin' ? 'Here’s what’s happening with pickups and orders.' : 'Your laundry orders, all in one place.'}</p>
                 </div>
                 {user?.role !== 'admin' && <Link to="/orders/new" className="button button-dark"><Plus size={16} /> Book a pickup</Link>}
             </div>
             <div className="dashboard-overview">
                 <div className="overview-card"><span className="overview-icon"><PackageOpen size={18} /></span><div><strong>{data?.length ?? '—'}</strong><span>{user?.role === 'admin' ? 'Recent orders' : 'Your orders'}</span></div></div>
                 <div className="overview-card"><span className="overview-icon"><CalendarDays size={18} /></span><div><strong>{data?.filter((order) => !['delivered', 'cancelled'].includes(order.status)).length ?? '—'}</strong><span>In progress</span></div></div>
-                <div className="overview-card overview-note"><span>GOOD CARE, RIGHT ON TIME.</span><p>{user?.role === 'admin' ? 'Orders are refreshed whenever you update their status.' : 'We’ll keep your orders fresh and up to date.'}</p></div>
+                <div className="overview-card overview-note"><span>YOUR ORDERS, RIGHT ON TIME.</span><p>{user?.role === 'admin' ? 'Orders are refreshed whenever you update their status.' : 'We’ll keep your orders up to date.'}</p></div>
             </div>
-            <div className="orders-heading"><div><span className="section-kicker">{user?.role === 'admin' ? 'The work in motion' : 'Your laundry, in good hands'}</span><h2>{user?.role === 'admin' ? 'Recent orders' : 'Your orders'}</h2></div><button type="button" className="icon-button" aria-label="Refresh orders" onClick={() => void queryClient.invalidateQueries({ queryKey: ['orders'] })}><RefreshCw size={17} /></button></div>
+            <div className="orders-heading"><div><span className="section-kicker">{user?.role === 'admin' ? 'The work in motion' : 'Your laundry orders'}</span><h2>{user?.role === 'admin' ? 'Recent orders' : 'Your orders'}</h2></div><button type="button" className="icon-button" aria-label="Refresh orders" onClick={() => void queryClient.invalidateQueries({ queryKey: ['orders'] })}><RefreshCw size={17} /></button></div>
             {isLoading && <div className="inline-loading"><span className="spinner" /> Gathering your orders…</div>}
             {isError && <p className="notice notice-error">We couldn’t load your orders. Please refresh the page to try again.</p>}
             {data?.length === 0 && (

@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { ArrowUpRight, Menu, X } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import Brand from './Brand';
+import siteConfig from '../config/site';
 
 export default function SiteLayout() {
     const { user, logout } = useAuth();
@@ -60,11 +61,11 @@ export default function SiteLayout() {
                 <div className="footer-inner">
                     <div>
                         <Brand />
-                        <p>More time for what feels like you.</p>
+                        <p>{siteConfig.copy.footerTagline}</p>
                     </div>
                     <div className="footer-meta">
-                        <span>Thoughtful laundry care, delivered.</span>
-                        <span>© {new Date().getFullYear()} Alwajud</span>
+                        <span>{siteConfig.tagline}</span>
+                        <span>© {new Date().getFullYear()} {siteConfig.name}</span>
                     </div>
                 </div>
             </footer>

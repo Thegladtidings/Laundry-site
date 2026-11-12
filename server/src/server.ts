@@ -17,7 +17,7 @@ import { migrateItemTags } from './lib/migrate-item-tags.js';
 
 const app = express();
 
-const allowedOrigins = (process.env.CLIENT_ORIGIN || 'http://localhost:5173')
+const allowedOrigins = (process.env.CLIENT_ORIGIN || 'http://localhost:5173' || 'https://laundry-site-mu-five.vercel.app')
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean);
